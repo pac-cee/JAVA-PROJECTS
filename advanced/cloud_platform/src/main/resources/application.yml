@@ -1,0 +1,76 @@
+spring:
+  application:
+    name: cloud-platform
+  
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+    
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+          
+      bindings:
+        output:
+          destination: events
+          content-type: application/json
+    
+    function:
+      definition: processEvent
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            scope: openid, profile, email
+      
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+  
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: cloud_platform
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      serviceRequest:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+  
+  ratelimiter:
+    instances:
+      serviceRequest:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 500ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} trace_id=%X{traceId:-} span_id=%X{spanId:-} - %msg%n" 
