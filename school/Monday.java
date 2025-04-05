@@ -785,3 +785,409 @@ public class RRATaxSystem {
         return value;
     }
 }
+
+
+
+
+
+
+////////////////////////////////////////////
+//////////////////////////////////////////
+
+
+
+
+
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+
+public class TaxDeclarationSystem {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        ArrayList<Declaration> declarations = new ArrayList<>();
+        
+        System.out.println("===== Rwanda Revenue Authority Tax Declaration System =====");
+        
+        boolean continueProgram = true;
+        while (continueProgram) {
+            try {
+                System.out.println("\nSelect an option:");
+                System.out.println("1. Create VAT Declaration");
+                System.out.println("2. Create Income Tax Declaration");
+                System.out.println("3. Process Payment");
+                System.out.println("4. Display All Declarations");
+                System.out.println("5. Exit");
+                System.out.print("Enter your choice: ");
+                
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+                
+                switch (choice) {
+                    case 1:
+                        declarations.add(createVatDeclaration(scanner));
+                        break;
+                    case 2:
+                        declarations.add(createIncomeTaxDeclaration(scanner));
+                        break;
+                    case 3:
+                        declarations.add(processPayment(scanner));
+                        break;
+                    case 4:
+                        displayAllDeclarations(declarations);
+                        break;
+                    case 5:
+                        continueProgram = false;
+                        System.out.println("Thank you for using RRA Tax Declaration System!");
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please select a number between 1 and 5.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Please enter a valid number.");
+                scanner.nextLine(); // Clear the invalid input
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+        
+        scanner.close();
+    }
+    
+    public static VatDeclaration createVatDeclaration(Scanner scanner) {
+        try {
+            Taxpayer taxpayer = createTaxpayer(scanner, "VAT");
+            return new VatDeclaration(taxpayer);
+        } catch (Exception e) {
+            System.out.println("Error creating VAT declaration: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    public static IncomeTax createIncomeTaxDeclaration(Scanner scanner) {
+        try {
+            Taxpayer taxpayer = createTaxpayer(scanner, "Income Tax");
+            return new IncomeTax(taxpayer);
+        } catch (Exception e) {
+            System.out.println("Error creating Income Tax declaration: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    public static Payments processPayment(Scanner scanner) {
+        try {
+            System.out.println("\n--- Process Payment ---");
+            System.out.print("Enter taxpayer ID: ");
+            int id = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+            
+            System.out.print("Enter taxpayer name: ");
+            String name = scanner.nextLine();
+            
+            System.out.print("Enter taxpayer age: ");
+            int age = scanner.nextInt();
+            validateAge(age);
+            
+            System.out.print("Enter tax type (VAT/Income Tax): ");
+            scanner.nextLine(); // Consume newline
+            String taxType = scanner.nextLine();
+            validateTaxType(taxType);
+            
+            System.out.print("Enter turnover amount: ");
+            double turnoverAmount = scanner.nextDouble();
+            validateAmount(turnoverAmount);
+            
+            System.out.print("Enter payment amount: ");
+            double paymentAmount = scanner.nextDouble();
+            validateAmount(paymentAmount);
+            
+            Taxpayer taxpayer = new Taxpayer(id, name, turnoverAmount, taxType, age);
+            return new Payments(taxpayer, paymentAmount);
+        } catch (Exception e) {
+            System.out.println("Error processing payment: " + e.getMessage());
+            throw e;
+        }
+    }
+    
+    public static Taxpayer createTaxpayer(Scanner scanner, String taxType) {
+        System.out.println("\n--- Create " + taxType + " Declaration ---");
+        
+        System.out.print("Enter taxpayer ID: ");
+        int id = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        
+        System.out.print("Enter taxpayer name: ");
+        String name = scanner.nextLine();
+        
+        System.out.print("Enter taxpayer age: ");
+        int age = scanner.nextInt();
+        validateAge(age);
+        
+        System.out.print("Enter turnover amount: ");
+        double turnoverAmount = scanner.nextDouble();
+        validateAmount(turnoverAmount);
+        
+        return new Taxpayer(id, name, turnoverAmount, taxType, age);
+    }
+    
+    public static void displayAllDeclarations(ArrayList<Declaration> declarations) {
+        if (declarations.isEmpty()) {
+            System.out.println("\nNo declarations have been created yet.");
+            return;
+        }
+        
+        System.out.println("\n===== All Declarations =====");
+        for (Declaration declaration : declarations) {
+            declaration.displayInfo();
+        }
+    }
+    
+    // Validation methods
+    public static void validateAge(int age) {
+        if (age < 20 || age > 60) {
+            throw new IllegalArgumentException("Age must be between 20 and 60 years");
+        }
+    }
+    
+    public static void validateTaxType(String taxType) {
+        if (!taxType.equalsIgnoreCase("VAT") && !taxType.equalsIgnoreCase("Income Tax")) {
+            throw new IllegalArgumentException("Tax type must be either 'VAT' or 'Income Tax'");
+        }
+    }
+    
+    public static void validateAmount(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than 0");
+        }
+    }
+}
+
+// Abstract class Declaration
+abstract class Declaration {
+    public abstract double calculateVatTax();
+    public abstract double calculateIncomeTax();
+    public abstract void displayInfo();
+}
+
+// Taxpayer class with encapsulation
+class Taxpayer {
+    private int id;
+    private String name;
+    private double turnoverAmount;
+    private double rate;
+    private String taxType;
+    private int age;
+    
+    public Taxpayer(int id, String name, double turnoverAmount, String taxType, int age) {
+        this.id = id;
+        this.name = name;
+        this.turnoverAmount = turnoverAmount;
+        this.taxType = taxType;
+        
+        // Validate age
+        if (age < 20 || age > 60) {
+            throw new IllegalArgumentException("Age must be between 20 and 60 years");
+        }
+        this.age = age;
+        
+        // Set rate based on tax type
+        this.setRate(taxType);
+    }
+    
+    // Getters and setters with validation
+    public int getId() {
+        return id;
+    }
+    
+    public void setId(int id) {
+        this.id = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public double getTurnoverAmount() {
+        return turnoverAmount;
+    }
+    
+    public void setTurnoverAmount(double turnoverAmount) {
+        if (turnoverAmount <= 0) {
+            throw new IllegalArgumentException("Turnover amount must be greater than 0");
+        }
+        this.turnoverAmount = turnoverAmount;
+    }
+    
+    public double getRate() {
+        return rate;
+    }
+    
+    public void setRate(String taxType) {
+        if (taxType.equalsIgnoreCase("VAT")) {
+            this.rate = 0.18; // 18% for VAT
+        } else if (taxType.equalsIgnoreCase("Income Tax")) {
+            this.rate = 0.30; // 30% for Income Tax
+        } else {
+            throw new IllegalArgumentException("Invalid tax type. Must be 'VAT' or 'Income Tax'");
+        }
+    }
+    
+    public String getTaxType() {
+        return taxType;
+    }
+    
+    public void setTaxType(String taxType) {
+        if (!taxType.equalsIgnoreCase("VAT") && !taxType.equalsIgnoreCase("Income Tax")) {
+            throw new IllegalArgumentException("Tax type must be either 'VAT' or 'Income Tax'");
+        }
+        this.taxType = taxType;
+        this.setRate(taxType); // Update rate when tax type changes
+    }
+    
+    public int getAge() {
+        return age;
+    }
+    
+    public void setAge(int age) {
+        if (age < 20 || age > 60) {
+            throw new IllegalArgumentException("Age must be between 20 and 60 years");
+        }
+        this.age = age;
+    }
+}
+
+// VAT Declaration class
+class VatDeclaration extends Declaration {
+    private Taxpayer taxpayer;
+    
+    public VatDeclaration(Taxpayer taxpayer) {
+        // Validate tax type
+        if (!taxpayer.getTaxType().equalsIgnoreCase("VAT")) {
+            throw new IllegalArgumentException("Tax type must be VAT for VAT declaration");
+        }
+        this.taxpayer = taxpayer;
+    }
+    
+    @Override
+    public double calculateVatTax() {
+        return taxpayer.getTurnoverAmount() * taxpayer.getRate();
+    }
+    
+    @Override
+    public double calculateIncomeTax() {
+        throw new UnsupportedOperationException("Income tax calculation not supported in VAT declaration");
+    }
+    
+    @Override
+    public void displayInfo() {
+        System.out.println("\n========== VAT Declaration ==========");
+        System.out.println("Taxpayer ID: " + taxpayer.getId());
+        System.out.println("Name: " + taxpayer.getName());
+        System.out.println("Age: " + taxpayer.getAge());
+        System.out.println("Turnover Amount: " + taxpayer.getTurnoverAmount());
+        System.out.println("VAT Rate: " + (taxpayer.getRate() * 100) + "%");
+        System.out.println("VAT Amount: " + calculateVatTax());
+        System.out.println("=====================================");
+    }
+}
+
+// Income Tax class
+class IncomeTax extends Declaration {
+    private Taxpayer taxpayer;
+    
+    public IncomeTax(Taxpayer taxpayer) {
+        // Validate tax type
+        if (!taxpayer.getTaxType().equalsIgnoreCase("Income Tax")) {
+            throw new IllegalArgumentException("Tax type must be Income Tax for Income Tax declaration");
+        }
+        this.taxpayer = taxpayer;
+    }
+    
+    @Override
+    public double calculateVatTax() {
+        throw new UnsupportedOperationException("VAT calculation not supported in Income Tax declaration");
+    }
+    
+    @Override
+    public double calculateIncomeTax() {
+        return taxpayer.getTurnoverAmount() * taxpayer.getRate();
+    }
+    
+    @Override
+    public void displayInfo() {
+        System.out.println("\n========== Income Tax Declaration ==========");
+        System.out.println("Taxpayer ID: " + taxpayer.getId());
+        System.out.println("Name: " + taxpayer.getName());
+        System.out.println("Age: " + taxpayer.getAge());
+        System.out.println("Turnover Amount: " + taxpayer.getTurnoverAmount());
+        System.out.println("Income Tax Rate: " + (taxpayer.getRate() * 100) + "%");
+        System.out.println("Income Tax Amount: " + calculateIncomeTax());
+        System.out.println("==========================================");
+    }
+}
+
+// Payments class
+class Payments extends Declaration {
+    private Taxpayer taxpayer;
+    private double amountPaid;
+    private double taxDue;
+    
+    public Payments(Taxpayer taxpayer, double amountPaid) {
+        this.taxpayer = taxpayer;
+        this.amountPaid = amountPaid;
+        
+        // Calculate tax due based on tax type
+        if (taxpayer.getTaxType().equalsIgnoreCase("VAT")) {
+            this.taxDue = taxpayer.getTurnoverAmount() * 0.18;
+        } else if (taxpayer.getTaxType().equalsIgnoreCase("Income Tax")) {
+            this.taxDue = taxpayer.getTurnoverAmount() * 0.30;
+        } else {
+            throw new IllegalArgumentException("Invalid tax type");
+        }
+    }
+    
+    public boolean isPaymentComplete() {
+        return amountPaid >= taxDue;
+    }
+    
+    @Override
+    public double calculateVatTax() {
+        if (taxpayer.getTaxType().equalsIgnoreCase("VAT")) {
+            return taxDue;
+        }
+        throw new UnsupportedOperationException("Not a VAT declaration");
+    }
+    
+    @Override
+    public double calculateIncomeTax() {
+        if (taxpayer.getTaxType().equalsIgnoreCase("Income Tax")) {
+            return taxDue;
+        }
+        throw new UnsupportedOperationException("Not an Income Tax declaration");
+    }
+    
+    @Override
+    public void displayInfo() {
+        System.out.println("\n========== Payment Information ==========");
+        System.out.println("Taxpayer ID: " + taxpayer.getId());
+        System.out.println("Name: " + taxpayer.getName());
+        System.out.println("Tax Type: " + taxpayer.getTaxType());
+        System.out.println("Tax Due: " + taxDue);
+        System.out.println("Amount Paid: " + amountPaid);
+        
+        if (isPaymentComplete()) {
+            System.out.println("Payment Status: Complete");
+            if (amountPaid > taxDue) {
+                System.out.println("Refund Amount: " + (amountPaid - taxDue));
+            }
+        } else {
+            System.out.println("Payment Status: Incomplete");
+            System.out.println("Remaining Balance: " + (taxDue - amountPaid));
+        }
+        System.out.println("========================================");
+    }
+}
