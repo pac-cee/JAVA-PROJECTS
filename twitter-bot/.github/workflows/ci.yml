@@ -1,0 +1,39 @@
+name: Java CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build with Maven
+      run: mvn clean install
+
+    - name: Run tests
+      run: mvn test
+
+    # Optional: Build Docker image
+    # - name: Build Docker image
+    #   run: docker build -t myapp:latest .
+
+    # Optional: Deploy to cloud (Heroku, AWS, etc.)
+    # - name: Deploy to Heroku
+    #   run: |
+    #     heroku container:login
+    #     heroku container:push web -a ${{ secrets.HEROKU_APP_NAME }}
+    #     heroku container:release web -a ${{ secrets.HEROKU_APP_NAME }}
+    #   env:
+    #     HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
