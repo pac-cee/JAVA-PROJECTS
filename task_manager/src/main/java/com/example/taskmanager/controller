@@ -1,0 +1,20 @@
+task_manager
+├── src
+│   └── main
+│       ├── java
+│       │   └── com
+│       │       └── example
+│       │           └── taskmanager
+│       │               ├── config
+│       │               ├── controller
+│       │               ├── model
+│       │               ├── repository
+│       │               └── TaskManagerApplication.java
+│       └── resources
+│           ├── application.properties
+│           └── data.sql
+├── .mvn
+│   └── wrapper
+│       └── maven-wrapper.properties
+├── pom.xml
+└── README.md
