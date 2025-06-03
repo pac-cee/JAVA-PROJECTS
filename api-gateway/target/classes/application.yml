@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  
+  # H2 Database Configuration for development
+  datasource:
+    url: jdbc:h2:mem:api_gateway
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+        
+  # Spring Cloud Gateway Configuration
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 10
+            redis-rate-limiter.burstCapacity: 20
+            redis-rate-limiter.requestedTokens: 1
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,routes
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    com.example.apigateway: DEBUG
