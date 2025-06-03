@@ -1,13 +1,14 @@
 package com.example.apigateway.controller;
 
+import java.util.Map;
+
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 
-import java.util.Map;
+import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/api/gateway")
